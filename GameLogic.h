@@ -1,50 +1,52 @@
 #pragma once
 
-#define NOT_FILL 'N'
 
-enum Result{
- FIVE_SMALL,
- FIVE_FLOWER,
- FORTH_BLOW,
- NN,
- N9,
- N8,
- N7,
- N6,
- N5,
- N4,
- N3,
- N2,
- ND,
- NO_GOOD,
-};
-enum Flag
+typedef enum 
 {
- BLACK,
- RED,
- PLUM,
- SQUARE
+	CARD_A,
+	CARD_2,
+	CARD_3,
+	CARD_4,
+	CARD_5,
+	CARD_6,
+	CARD_7,
+	CARD_8,
+	CARD_9,
+	CARD_10,
+	CARD_J,
+	CARD_Q,
+	CARD_K,
+	CARD_SMALL_KING,
+	CARD_BIG_KING,
+}CARD_ENUM;
+
+enum ShuffleState
+{
+	IsShuffle,
+	NotShuffle
+};
+
+typedef enum 
+{
+	KING_BLOW,
+	FOUR_BLOW,
+	THREE_CARDS
+}CardType;
+
+struct CardHand
+{
+  CardType cardType;
+  int index;
 };
 struct Card{
- char card;
- Flag flag;
-};
-struct Player{
- int player;
- int score;
- Result result;
+ CARD_ENUM card;
+ ShuffleState state;
 };
 void initSrand();
-void initCard(const char* card_char,int size_of_card_char,Card* cards,int numOfCards);
-void shuffle(Card* cards,const int size_of_cards,const char* card_char,const int size_of_card_char);
+void initCard(const CARD_ENUM* card_char,int size_of_card_char,Card* cards,int numOfCards);
+void shuffle(Card* cards,const int size_of_cards,const CARD_ENUM* card_char,const int size_of_card_char);
+int getSize(int card);
+void sort(Card* cards,int start,int end);
 void showCards(const Card* cards,int start,int end);
-void showPlayerCards(const Card* cards,int player,int numOfPlayers);
-int getCardSize(char c);
-Result getResult(int card1,int card2,int card3,int player,const Card* cards);
-void showResult(Result result);
-Result getAIResult(int player,const Card* cards);
-int getPoint(Result result);
-int compare(Result result1,Result result2);
-int getDealer(const int numOfPlayers);
-void showDealer(const int dealer,int numOfPlayers);
-void showScore(Player *player,const int num,const int dealer);
+void showNumOfLots(const Card* cards,int start,int end);
+void showNumOfLots(const Card* cards,int player);

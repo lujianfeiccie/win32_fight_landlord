@@ -3,353 +3,341 @@
 #include<stdlib.h>
 #include<time.h>
 #include <string.h>
+#define NUM_OF_A_TO_K 13
+#define NUM_OF_PLAYER_CARDS 17
 void initSrand()
 {
 	srand((int)time(0));
 }
-void initCard(const char* card_char,int size_of_card_char,Card* cards,int numOfCards){
+void initCard(const CARD_ENUM* card_char,int size_of_card_char,Card* cards,int numOfCards){
  
- for(int i=0;i<numOfCards;i++)
+ for(int i=0;i<numOfCards-2;i++) //Initial the card without kings
  {
-  cards[i].card = NOT_FILL;
+	 int index = i % NUM_OF_A_TO_K;
+	 //printf("index = %d card_char = %d\n",index,card_char[index]);
+	 cards[i].card = card_char[index];
+	 cards[i].state = NotShuffle;
+ }
+ //Initial  the card with kings
+ for(int i=numOfCards-2,j=size_of_card_char-2;
+	 i<numOfCards;
+	 i++,j++)
+ {
+   cards[i].card = card_char[j];
+   cards[i].state = NotShuffle;
  }
 }
-void shuffle(Card* cards,const int size_of_cards,const char* card_char,const int size_of_card_char){
+void shuffle(Card* cards,const int size_of_cards,const CARD_ENUM* card_char,const int size_of_card_char){
  
  int pos;
- 
+ Card* tmp_cards = new Card[size_of_cards];
+
  for(int card=0;card<size_of_cards;card++){
-  do{
+	 tmp_cards[card].card = cards[card].card;
+ }
+ for(int card=0;card<size_of_cards;card++){
+ 
+  do
+  {
    pos = rand()%size_of_cards;
-  }while(cards[pos].card!=NOT_FILL); //find the blank index to fill in
-  cards[pos].card= card_char[card % size_of_card_char];
-  switch(card/size_of_card_char){
-  case 0:
-   cards[pos].flag = BLACK;
-   break;
-  case 1:
-   cards[pos].flag = RED;
-   break;
-  case 2:
-   cards[pos].flag = PLUM;
-   break;
-  case 3:
-   cards[pos].flag = SQUARE;
-   break;
   }
- 
+  while(cards[pos].state!=NotShuffle); //find the blank index to fill in
+
+  cards[pos].card= tmp_cards[card].card;
+  cards[pos].state= IsShuffle;   
  }
+ delete[] tmp_cards;
 }
-void showCards(const Card* cards,int start,int end){
- 
+void showCards(const Card* cards,int start,int end)
+{
+ int a_count = 0;
+ int count_j = 0;
+ int count_q = 0;
+ int count_k = 0;
  for(int i=start;i<=end;i++)
  {
-  if(cards[i].card=='0')
-  {
-   printf("10\t");
-  }else{
-   printf("%c\t",cards[i].card);
-  }
+	 switch(cards[i].card)
+	 {
+	 case CARD_3:
+		 {
+			 printf("3\t");
+		 }
+		 break;
+	 case CARD_4:
+		 {
+			 printf("4\t");
+		 }
+		 break;
+	 case CARD_5:
+		 {
+			 printf("5\t");
+		 }
+		 break;
+	 case CARD_6:
+		 {
+			 printf("6\t");
+		 }
+		 break;
+	 case CARD_7:
+		 {
+			 printf("7\t");
+		 }
+		 break;
+	 case CARD_8:
+		 {
+			 printf("8\t");
+		 }
+		 break;
+	 case CARD_9:
+		 {
+			 printf("9\t");
+		 }
+		 break;
+	 case CARD_10:
+		 {
+			 printf("10\t");
+		 }
+		 break;
+	 case CARD_J:
+		 {
+			 printf("J\t");
+			 count_j++;
+		 }
+		 break;
+	 case CARD_Q:
+		 {
+			 printf("Q\t");
+			 count_q++;
+		 }
+		 break;
+	 case CARD_K:
+		 {
+			 printf("K\t");
+			 count_k++;
+		 }
+		 break;
+	case CARD_A:
+		{
+			printf("A\t");
+			a_count++;
+		}
+		 break;
+	case CARD_2:
+		{
+			printf("2\t");
+		}
+		 break;
+	 case CARD_SMALL_KING:
+		 {
+			 printf("SKing\t");
+		 }
+		 break;
+	 case CARD_BIG_KING:
+		 {
+			 printf("BKing\t");
+		 }
+		 break;	
+	 } 
  }
+ 
  printf("\n");
+
+ //printf("a_count=%d,count_j=%d,count_q=%d,count_k=%d\n",a_count,count_j,count_q,count_k);
 }
-void showPlayerCards(const Card* cards,int player,int numOfPlayers)
+int getSize(int card)
 {
- int start = player*5;
- int end = start + 4;
- if(player<numOfPlayers-1){
-  printf("玩家%d\t:",player);
- }else{
-  printf("自己\t:");
- }
- showCards(cards,start,end);
-}
-int getCardSize(char c)
-{
- if(c == 'A')
- {
-  return 1;
- }
- if(c>='2' && c <='9')
- {
-  return c-48;
- }
- if(c == '0')
- {
-  return 10;
- }
- if(c == 'J' || c == 'Q' || c == 'K')
- {
-  return 10;
- }
-}
-Result getResult(int card1,int card2,int card3,int player,const Card* cards)
-{
- if(card1 == -1 || card2 ==-1 || card3 ==-1){
-  return NO_GOOD;
- }
- int firstThree=0,lastTwo=0;
- int start = player*5;
- int end = start + 4;
- 
- ///////////////////五小牛//////////////////
- ///每张牌小于五，总数小于10
- int small_cow = 1;
- int small_cow_count = 0;
- for(int i=start;i<=end;i++){
-  int size = getCardSize(cards[i].card);
-  if(size >=5){
-   small_cow = 0;
+	switch(card)
+	{
+	case CARD_3: 
+	{
+			return 1;
+	}
+	case CARD_4: 
+	{
+			return 2;
+	}
+	case CARD_5: 
+	{
+			return 3;
+	}
+	case CARD_6: 
+	{
+			return 4;
+	}
+	case CARD_7: 
+	{
+			return 5;
+	}
+	case CARD_8: 
+	{
+			return 6;
+	}
+	case CARD_9: 
+	{
+			return 7;
+	}
+	case CARD_10: 
+	{
+			return 8;
+	}
+	case CARD_J: 
+	{
+			return 9;
+	}
+	case CARD_Q: 
+	{
+			return 10;
+	}
+	case CARD_K: 
+	{
+			return 11;
+	}
+	case CARD_A: //A
+	{
+			return 12;
+	}
+	case CARD_2://2
+	{
+			return 13;
+	}
+	case CARD_SMALL_KING://Small King
+	{
+			return 14;		
+	}
+	case CARD_BIG_KING://Big King
+	{
+			return 15;
+	}
   }
-  small_cow_count +=size;
- }
- if(small_cow ==1 && small_cow_count<=10)
- {
-  return FIVE_SMALL;
- }
- ///////////////////end 五小牛//////////////////
- //////////////////五花牛///////////////////
- /////五张都是花牌
- int five_cow = 1;
- for(int i=start;i<=end;i++){
-  if(cards[i].card != 'J' &&
-     cards[i].card != 'Q' &&
-     cards[i].card != 'K')
+	return card;
+}
+void swap(Card* cards,int a,int b)
+{
+	CARD_ENUM tmp_card = cards[a].card;
+	cards[a].card = cards[b].card;
+	cards[b].card = tmp_card;
+}
+void sort(Card* cards,int start,int end)
+{
+  int i,j;
+  int length = end - start+1;  
+  printf("length=%d\n",length);
+  for(i=0;i< length-1;i++)
   {
-   five_cow = 0;
-  }
- }
- if(five_cow ==1){
-  return FIVE_FLOWER;
- }
- ////////////////////四炸///////////////////
- //////四张一样的牌
- int same_count = 0;
- for(int i=start;i<=end;i++)
- {
-  same_count = 0;
-  for(int j=start;j<=end;j++)
-  {
-   if(cards[i].card == cards[j].card){
-    ++same_count;
-   }
-  }
-  if(same_count>=4){
-   return FORTH_BLOW;
-  }
- }
- ////////////////////END四炸//////////////
- for(int i=start;i<=end;i++){
-  if(i==start+card1 || i==start+card2 || i==start+card3){
-   firstThree += getCardSize(cards[i].card);
-  }else{
-   lastTwo += getCardSize(cards[i].card);
-  }
- }
- //printf("\n前三张之和=%d, 后两张之和=%d\n",firstThree,lastTwo);
- if( firstThree % 10 ==0 ) //前三张之和是十的整倍数
- {
-  if(lastTwo % 10 ==0){ //后两张之和是也是十的整倍数=牛牛
-   return NN;
-  }
-  if(lastTwo>10){//后两张之和大于10,则取个位数
-   lastTwo = lastTwo % 10;
-   //printf("1digit:%d\n",lastTwo);
-  }
-  switch(lastTwo){ //判断是牛几
-  case 1:
-   return ND;
-  case 2:
-   return N2;
-  case 3:
-   return N3;
-  case 4:
-   return N4;
-  case 5:
-   return N5;
-  case 6:
-   return N6;
-  case 7:
-   return N7;
-  case 8:
-   return N8;
-  case 9:
-   return N9;
-  }
- }
- return NO_GOOD;
-}
-void showResult(Result result)
-{
- switch(result){
- case NO_GOOD:
-  printf("没牛\n");
-  break;
- case ND:
-  printf("牛丁\n");
-  break;
- case N2:
-  printf("牛二\n");
-  break;
- case N3:
-  printf("牛三\n");
-  break;
- case N4:
-  printf("牛四\n");
-  break;
- case N5:
-  printf("牛五\n");
-  break;
- case N6:
-  printf("牛六\n");
-  break;
- case N7:
-  printf("牛七\n");
-  break;
- case N8:
-  printf("牛八\n");
-  break;
- case N9:
-  printf("牛九\n");
-  break;
- case NN:
-  printf("牛牛\n");
-  break;
- case FORTH_BLOW:
-  printf("四炸\n");
-  break;
- case FIVE_FLOWER:
-  printf("五花牛\n");
-  break;
- case FIVE_SMALL:
-  printf("五小牛\n");
-  break;
- }
-}
-Result getAIResult(int player,const Card* cards)
-{
- int start= player * 5;
- int end = start+4;
- int count = 0;
- int firstThreeSum = 0;
- //C(5,3)组合寻找前三个数之和为10的整倍数
- for(int card1 = start;card1<=end;card1++)
- {
-  for(int card2 = card1+1;card2<=end;card2++)
-  {
-     if(card2 == card1) continue;
-   for(int card3 = card2+1;card3<=end;card3++)
+   for(j= length-2;j>=i;j--)
    {
-    if(card3 == card2 || card2 == card1) continue;
-    int sizeOfCard1 = getCardSize(cards[card1].card);
-    int sizeOfCard2 = getCardSize(cards[card2].card);
-    int sizeOfCard3 = getCardSize(cards[card3].card);
-    firstThreeSum = sizeOfCard1 + sizeOfCard2 + sizeOfCard3;
-    //printf("%d+%d+%d=%d\n",sizeOfCard1,sizeOfCard2,sizeOfCard3,firstThreeSum);
-   
-    if(firstThreeSum % 10 == 0){
-     return getResult(card1,card2,card3,player,cards);
+	   //length-2 > length-1 (这里,length-1是边界)
+    if( getSize(cards[j].card) > getSize(cards[j+1].card) )//前者大于后者
+	{ 		
+		 swap(cards,j,j+1); //两两交换
     }
-    ++count;
    }
   }
- }
- //printf("count=%d\n",count);
- return NO_GOOD;
 }
-int getPoint(Result result)
+void initCardHand(CardHand* carhand,int size)
 {
-  //参考牛牛游戏的规则
-  switch(result)
-  {
-  //五小牛和五花牛输赢5分
-  case FIVE_SMALL:
-  case FIVE_FLOWER:{
-   return 5;
-  }
-  //四炸输赢4分
-  case FORTH_BLOW:{
-   return 4;
-  }
-  case NN:{
-   return 3;
-  }
-  //牛八牛九输赢2分
-  case N9:
-  case N8:{
-   return 2;
-  }
-  //其他输赢1分
-  case N7:
-  case N6:
-  case N5:
-  case N4:
-  case N3:
-  case N2:
-  case ND:
-  case NO_GOOD:{
-   return 1;
-  }
- }
- return 0;
+	for(int i=0;i<size;i++){
+		carhand[i].index = -1;
+	}
 }
-int compare(Result result1,Result result2)
+//numOfCards: 连续张数
+int contains(const CardHand* cardhand ,int numOfHands,int numOfCards,int index)
 {
- return result2 - result1;
+	for(int i=0;i<numOfHands;i++)
+	{
+		for(int j=0;j<numOfCards;j++){
+			if(cardhand[i].index+j == index)
+			{
+			//	printf("cardhand[%d].index=%d",i,cardhand[i].index);
+				return i;
+			}
+		}
+	}
+	return -1;
+}
+void showNumOfLots(const Card* cards,int start,int end)
+{
+	//Two king
+	CardHand twoKing;
+	twoKing.cardType = KING_BLOW;
+	twoKing.index = -1;
+
+	//Four blow ( 5 at most )
+	CardHand fourBlow[5];
+	int sizeOfFourBlow = sizeof(fourBlow)/sizeof(CardHand);
+	initCardHand(fourBlow,sizeOfFourBlow);
+
+	//Three cards
+	CardHand threeBlow[6];
+	int sizeOfThreeBlow = sizeof(threeBlow)/sizeof(CardHand);
+	initCardHand(threeBlow,sizeOfThreeBlow);
+
+	for(int i=start;i<=end;i++)
+	{
+		//Two king
+		if(i<end && cards[i].card == CARD_SMALL_KING && cards[i+1].card ==CARD_BIG_KING)
+		{			
+			twoKing.index  = i;
+		}
+		//Four blow
+		else if(i<= (end-3) && 
+			cards[i  ].card == cards[i+1].card && 
+			cards[i+1].card == cards[i+2].card &&
+			cards[i+2].card == cards[i+3].card )
+		{			
+			for(int j = 0;j<sizeOfFourBlow;j++)
+			{
+				if(fourBlow[j].index == -1)
+				{
+					fourBlow[j].index = i;
+					break;
+				}
+			}	
+		}
+		//Three cards
+		else if(i<= (end-2) && -1==contains(fourBlow,sizeOfFourBlow,4,i) &&
+			cards[i  ].card == cards[i+1].card && 
+			cards[i+1].card == cards[i+2].card)
+		{			
+			for(int j = 0;j<sizeOfThreeBlow;j++)
+			{
+				if(threeBlow[j].index == -1)
+				{
+					threeBlow[j].index = i;
+					break;
+				}
+			}	
+		}
+	}
+
+	if(twoKing.index!=-1)
+	{
+		showCards(cards,twoKing.index,twoKing.index+1);
+		//printf("\n");
+	}
+
+	for(int i =0; i <sizeOfFourBlow;i++)
+	{
+		if(fourBlow[i].index!=-1)
+		{
+			showCards(cards,fourBlow[i].index,fourBlow[i].index+3);
+			//printf("\n");
+		}
+	}
+	for(int i =0; i <sizeOfThreeBlow;i++)
+	{
+		if(threeBlow[i].index!=-1)
+		{
+			showCards(cards,threeBlow[i].index,threeBlow[i].index+2);
+			//printf("\n");
+		}
+	}
+	
 }
 
-int getDealer(const int numOfPlayers){
-  int dealer = rand() % numOfPlayers;
-  return dealer;
-}
-void showDealer(const int dealer,int numOfPlayers)
+void showNumOfLots(const Card* cards,int player)
 {
- if(dealer!=numOfPlayers-1){
-  printf("庄家:玩家%d",dealer);
- }else{
-  printf("庄家:自己");
- }
- printf("\n");
-}
-
-void showScore(Player *player,const int num,const int dealer)
-{
- Result result_dealer = player[dealer].result;
- 
- int other_player_score_count = 0;//用于计算闲家的输赢情况
- int* score = new int[num];
- memset(score,0,sizeof(int)*num);
-
- for(int i=0;i<num;i++)
- {
-  if(dealer==i) continue;
-
-  if(compare(player[i].result,result_dealer) > 0 )//闲家比庄家大
-  {
-	//闲家赢钱
-	  score[i] = getPoint(player[i].result);
-  }
-  else//闲家小于或等于庄家
-  {
-	//闲家输钱
-	  score[i] = (-1) * getPoint(player[i].result);
-  }
-  player[i].score += score[i];
-  other_player_score_count += score[i];
- }
- 
-  score[dealer]  += (-1)*other_player_score_count;
-  player[dealer].score += score[dealer];
-  for(int i=0;i<num;i++)
-  {
-	 if(i<num-1)
-	 {
-		 printf("玩家%d\t分数:%d\t总分:%d",player[i].player,score[i],player[i].score);
-	 }
-	 else
-	 {
-		 printf("自己\t分数:%d\t部分:%d",score[i],player[i].score);
-	 }
-	 printf("\n");
-  }
+	int start = player * NUM_OF_PLAYER_CARDS;
+	int end = start + NUM_OF_PLAYER_CARDS-1;
+	showNumOfLots(cards,start,end);
 }
