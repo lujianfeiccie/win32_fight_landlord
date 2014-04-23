@@ -42,12 +42,12 @@ int _tmain(int argc, _TCHAR* argv[])
 	showCards(cards,0,NUM_OF_CARDS-1);
 
 	printf("My cards:\n");
-	//showCards(cards,0,NUM_OF_CARDS-1);
-	sort(cards,0,NUM_OF_CARDS-1);
+	showCards(cards,0,16);
+	sort(cards,0,16);
 	printf("After sorted ! My cards:\n");
-	showCards(cards,0,NUM_OF_CARDS-1);
+	showCards(cards,0,16);
 	printf("My cards type:\n");
-	showNumOfLots(cards,0,NUM_OF_CARDS-1);
+	showNumOfLots(cards,0,16);
 	return 0;
 }
 

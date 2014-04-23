@@ -30,13 +30,17 @@ typedef enum
 {
 	KING_BLOW,
 	FOUR_BLOW,
-	THREE_CARDS
+	THREE_CARDS,
+	THREE_CARDS_SORT,
 }CardType;
+
 
 struct CardHand
 {
   CardType cardType;
   int index;
+  int length;
+  int index_next;
 };
 struct Card{
  CARD_ENUM card;
