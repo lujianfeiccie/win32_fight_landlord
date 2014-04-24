@@ -34,20 +34,38 @@ int _tmain(int argc, _TCHAR* argv[])
 	showCards(cards,0,NUM_OF_CARDS-1);
 	printf("After shuffle:\n");
 
-	shuffle(cards,
+	/*shuffle(cards,
 		NUM_OF_CARDS,
 		card_values,
-		size_of_card_values);
+		size_of_card_values);*/
 
-	showCards(cards,0,NUM_OF_CARDS-1);
+	cards[0].card = CARD_A;
+	cards[1].card = CARD_3;
+	cards[2].card = CARD_3;
+	cards[3].card = CARD_3;
+	cards[4].card = CARD_3;
+	cards[5].card = CARD_4;
+	cards[6].card = CARD_4;
+	cards[7].card = CARD_4;
+	cards[8].card = CARD_5;
+	cards[9].card = CARD_5;
+	cards[10].card = CARD_5;
+	cards[11].card = CARD_K;
+	cards[12].card = CARD_A;
+	cards[13].card = CARD_2;
+	cards[14].card = CARD_SMALL_KING;
+	cards[15].card = CARD_BIG_KING;
+	cards[16].card = CARD_6;
+
+	showCards(cards,0,16);
 
 	printf("My cards:\n");
-	showCards(cards,0,16);
+	//showCards(cards,0,NUM_OF_CARDS-1);
 	sort(cards,0,16);
 	printf("After sorted ! My cards:\n");
 	showCards(cards,0,16);
 	printf("My cards type:\n");
-	showNumOfLots(cards,0,16);
+	showNumOfLots(cards,0,NUM_OF_CARDS-1);
 	return 0;
 }
 

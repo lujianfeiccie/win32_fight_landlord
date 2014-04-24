@@ -274,14 +274,19 @@ void showNumOfLots(const Card* cards,int start,int end)
 	int sizeOfThreeBlow = sizeof(threeBlow)/sizeof(CardHand);
 	initCardHand(threeBlow,sizeOfThreeBlow,THREE_CARDS);
 
-	
-	for(int i=start;i<=end;i++)
+	//Single flush
+	/*CardHand singleFlush[4];
+	int sizeOfThreeBlow = sizeof(threeBlow)/sizeof(CardHand);
+	initCardHand(threeBlow,sizeOfThreeBlow,THREE_CARDS);*/
+
+	for(int i=start;i<=end;)
 	{
 		//Two king
 		if(i<end && cards[i].card == CARD_SMALL_KING && cards[i+1].card ==CARD_BIG_KING)
 		{			
 			twoKing.index  = i;
 			twoKing.length = 2;
+			i+=2;
 		}
 		//Four blow
 		else if(i<= (end-3) && 
@@ -291,13 +296,15 @@ void showNumOfLots(const Card* cards,int start,int end)
 		{			
 			for(int j = 0;j<sizeOfFourBlow;j++)
 			{
-				if(fourBlow[j].index == -1)
+				if(fourBlow[j].index == -1) //存放四炸
 				{
 					fourBlow[j].index = i;
 					fourBlow[j].length = 4;
 					break;
 				}
-			}	
+			}
+			i+=4;
+			printf("i=%d\n",i);
 		}
 		//Three cards
 		else if(i<= (end-2) && -1==contains(fourBlow,sizeOfFourBlow,i) &&
@@ -313,55 +320,51 @@ void showNumOfLots(const Card* cards,int start,int end)
 
 					if(j>0 && getSize(cards[threeBlow[j-1].index].card) < getSize(CARD_SMALL_KING)) //排除大小王
 					{
-						if(getSize(cards[threeBlow[j-1].index].card)+1 == getSize(cards[threeBlow[j].index].card))//上一个三条和这个三条可以构成三顺
+						int sizeBefore = getSize(cards[threeBlow[j-1].index].card);
+						int sizeAfter  = getSize(cards[threeBlow[j].index].card);
+						printf("sizeBefore=%d sizeAfter=%d\n",sizeBefore,sizeAfter);
+						if( sizeBefore + 1 == sizeAfter )//上一个三条和这个三条可以构成三顺
 						{
-							threeBlow[j-1].index_next = threeBlow[j].index;//下一个索引指向这个三条的开始索引
+							threeBlow[j-1].index_next = threeBlow[j].index;//下一个索引指向这个三条的开始索引							
 						}
 					}
 					break;
 				}
-			}	
+			}//end of for
+			i+=3;
 		}
-	}
+		//Single flush
+		else
+		{
+		   i+=1;
+		}
+	} //End of for
 	///////////////////////////////////////Show cards/////////////////////////////////////////////
 	if(twoKing.index!=-1)
 	{
+		printf("----------------------------Two Kings-------------------------------------\n");
 		showCards(cards,twoKing.index,twoKing.index + twoKing.length -1);
-		//printf("\n");
 	}
 
+	printf("----------------------------Four Blow-------------------------------------\n");
 	for(int i =0; i <sizeOfFourBlow;i++)
 	{
 		if(fourBlow[i].index!=-1)
 		{
 			showCards(cards,fourBlow[i].index,fourBlow[i].index + fourBlow[i].length - 1);
-			printf("-----------------------------------------------------------------\n");
 		}
 	}
-	for(int i =0; i <sizeOfThreeBlow;i++)
+		printf("-------------------------Three cards-------------------------------------\n");
+	for(int i =0; i <sizeOfThreeBlow;)
 	{
-		/*if(threeBlow[i].index!=-1)
-		{
-			int last_index = -1 ; //三顺最后一个三条的第一个索引
-			while( threeBlow[i].index_next!=-1 )
-			{
-			  last_index = threeBlow[i].index_next;			  
-			  ++i;
-			}
-			if(last_index!=-1){
-				showCards(cards,threeBlow[i].index,last_index + threeBlow[i].length - 1);
-				printf("-----------------------------------------------------------------\n");
-			}
-			//printf("\n");
-		}*/
 		if(threeBlow[i].index!=-1)
 		{
 			while(threeBlow[i].index_next!=-1)
 			{
 				showCards(cards,threeBlow[i].index,threeBlow[i].index + threeBlow[i].length - 1);
 				++i;
-			}
-			printf("-----------------------------------------------------------------\n");
+			}		
+			printf("--------------------------------------------------------------\n");
 			showCards(cards,threeBlow[i].index,threeBlow[i].index + threeBlow[i].length - 1);
 		}
 	}
